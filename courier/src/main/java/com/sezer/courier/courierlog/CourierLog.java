@@ -1,14 +1,10 @@
 package com.sezer.courier.courierlog;
 
-import com.sezer.courier.courier.Courier;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.geo.Point;
-
-import java.time.ZonedDateTime;
 
 @Data
 @Builder
@@ -28,9 +24,7 @@ public class CourierLog {
     )
     private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "courier_id")
-    private Courier courier;
+    private Integer courierId;
 
     private String detail;
 }

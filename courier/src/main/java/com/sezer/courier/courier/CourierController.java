@@ -1,10 +1,9 @@
 package com.sezer.courier.courier;
 
 import com.sezer.common.dto.Store;
+import com.sezer.courier.ApplicationProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessageProperties;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,7 +11,7 @@ import java.util.List;
 @RestController
 @Slf4j
 @RequestMapping("api/v1/courier")
-public record CourierController(CourierService courierService, AmqpTemplate queueSender) {
+public record CourierController(CourierService courierService, AmqpTemplate queueSender, ApplicationProperties applicationProperties) {
 
     @PostMapping
     public void registerCustomer(@RequestBody CourierRegistrationRequest courierRegistrationRequest){
@@ -29,11 +28,7 @@ public record CourierController(CourierService courierService, AmqpTemplate queu
     public String sendMessage(@RequestParam String text) {
         Store store = new Store();
         store.setName(text);
-        MessageProperties messageProperties = new MessageProperties();
-        messageProperties.setHeader("ultima", "sim");
-        Message message = new Message(text.getBytes(), messageProperties);
-
-        queueSender.convertAndSend("direct-exchange", "routing-key", store);
+        queueSender.convertAndSend(applicationProperties.getLocationQueueConfig().getExchange(), applicationProperties.getLocationQueueConfig().getRoutingKey(), store);
         return "ok. done";
     }
 

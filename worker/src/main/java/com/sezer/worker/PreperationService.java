@@ -22,6 +22,8 @@ public class PreperationService {
 
     private final ObjectMapper objectMapper;
 
+    private List<Store> stores;
+
     public PreperationService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
@@ -30,8 +32,10 @@ public class PreperationService {
     void onInit() throws IOException {
         String content = resourceFile.getContentAsString(StandardCharsets.UTF_8);
         List<Store> storeList = objectMapper.readValue(content, new TypeReference<List<Store>>(){});
-        for(Store store: storeList) {
-            log.info(store.toString());
-        }
+        stores = storeList;
+    }
+
+    public List<Store> getStores() {
+        return stores;
     }
 }

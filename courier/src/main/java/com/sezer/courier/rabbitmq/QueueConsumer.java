@@ -3,7 +3,6 @@ package com.sezer.courier.rabbitmq;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sezer.common.dto.Store;
 import org.springframework.amqp.core.Message;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +18,7 @@ public class QueueConsumer {
         this.objectMapper = objectMapper;
     }
 
-    @RabbitListener(queues = {"${application.queue.name}"})
+    //@RabbitListener(queues = {"${application.location-queue-config.name}"})
     public void receive(@Payload Message message) throws Exception {
         System.out.println("Message " + message + "  " + LocalDateTime.now());
         System.out.println(message.toString());

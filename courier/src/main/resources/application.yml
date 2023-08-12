@@ -37,7 +37,11 @@ eureka:
     register-with-eureka: true
 
 application:
-  queue:
+  location-queue-config:
     name: locations
-    exchange: direct-exchange
-    routing-key: routing-key
+    exchange: direct-locations
+    routing-key: routing-locations
+  log-queue-config:
+    name: logs
+    exchange: direct-logs
+    routing-key: routing-logs

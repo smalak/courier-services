@@ -25,4 +25,9 @@ public class Courier {
     private Integer id;
     private String firstName;
     private String lastName;
+
+    public Courier(Integer courierId){
+        this.id = courierId;
+    }
+
 }
