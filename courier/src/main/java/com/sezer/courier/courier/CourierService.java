@@ -8,8 +8,11 @@ import java.util.List;
 @Service
 @Slf4j
 public record CourierService(CourierRepository courierRepository) {
-    public void registerCustomer(CourierRegistrationRequest courierRegistrationRequest) {
+
+    public void registerCourier(CourierRegistrationRequest courierRegistrationRequest) {
+
         Courier courier = Courier.builder()
+                .id(courierRegistrationRequest.id())
                 .firstName(courierRegistrationRequest.firstName())
                 .lastName(courierRegistrationRequest.lastName())
                 .build();

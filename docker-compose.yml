@@ -1,13 +1,16 @@
 services:
   postgres:
+    build:
+      context: .
     container_name: postgres
-    image: kartoza/postgis:15
+    image: sezer-postgis:15
     environment:
       POSTGRES_USER: sezer
       POSTGRES_PASSWORD: password
       PGDATA: /data/postgres
     volumes:
       - postgres:/data/postgres
+      - ./init.sql:/docker-entrypoint-initdb.d/db.sql
     ports:
       - "5432:5432"
     networks:

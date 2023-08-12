@@ -1,6 +1,5 @@
 package com.sezer.courier.courier;
 
-import com.sezer.common.dto.Store;
 import com.sezer.courier.ApplicationProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -14,22 +13,14 @@ import java.util.List;
 public record CourierController(CourierService courierService, AmqpTemplate queueSender, ApplicationProperties applicationProperties) {
 
     @PostMapping
-    public void registerCustomer(@RequestBody CourierRegistrationRequest courierRegistrationRequest){
+    public void registerCourier(@RequestBody CourierRegistrationRequest courierRegistrationRequest){
         log.info("new customer registration request {}", courierRegistrationRequest.toString());
-        courierService.registerCustomer(courierRegistrationRequest);
+        courierService.registerCourier(courierRegistrationRequest);
     }
 
     @GetMapping
-    public List<Courier> getCustomers(){
+    public List<Courier> getCouriers(){
         return courierService.getCourierList();
-    }
-
-    @GetMapping("/message")
-    public String sendMessage(@RequestParam String text) {
-        Store store = new Store();
-        store.setName(text);
-        queueSender.convertAndSend(applicationProperties.getLocationQueueConfig().getExchange(), applicationProperties.getLocationQueueConfig().getRoutingKey(), store);
-        return "ok. done";
     }
 
 

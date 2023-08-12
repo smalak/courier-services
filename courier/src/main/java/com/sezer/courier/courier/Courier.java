@@ -14,14 +14,6 @@ import lombok.NoArgsConstructor;
 public class Courier {
 
     @Id
-    @SequenceGenerator(
-            name = "courier_id_sequence",
-            sequenceName = "courier_id_sequence"
-    )
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "courier_id_sequence"
-    )
     private Integer id;
     private String firstName;
     private String lastName;
