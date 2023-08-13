@@ -12,7 +12,7 @@ A multimodule project based on microservice architecture. Most of the logical de
 
 A courier tracking multimodule project which consist of 3 microservices and one common module.
 
-eureka-server: A microservice registry server. Used for registering other microservices, and handles server side load balancing.
+eureka-server: A microservice registry server. Used for registering other microservices, and handles server side load balancing. Services registered on this server could be seen on **localhost:8761**
 
 courier: Manages courier db operations. Also it is rabbitmq client for logging store entrance. (Because there is no need to manage logging requests syncronously.)
 
