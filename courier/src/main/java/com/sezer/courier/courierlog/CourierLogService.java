@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -27,5 +28,9 @@ public record CourierLogService(CourierLogRepository courierLogRepository, Objec
         CourierLog courierLog = objectMapper.readValue(payload, CourierLog.class);
         System.out.println(courierLog.toString());
         this.saveLog(courierLog);
+    }
+
+    public List<CourierLog> getCourierEntrances(Integer courierId) {
+        return courierLogRepository.findAllByCourierId(courierId);
     }
 }

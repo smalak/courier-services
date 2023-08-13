@@ -13,5 +13,8 @@
         <module name="courier" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="locationData" target="20" />
+    </bytecodeTargetLevel>
   </component>
 </project>

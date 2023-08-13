@@ -37,7 +37,6 @@ public class Processor {
     @Autowired
     private CourierTotalDistanceClient courierTotalDistanceClient;
     private final LoggerService loggerService;
-    private final PreperationService preperationService;
 
     //Defined for caching last location data and holding some calculations.
     private Map<Integer, CourierDetails> courierDetailsCache = new HashMap<>();
@@ -45,7 +44,6 @@ public class Processor {
 
     public Processor(LoggerService loggerService, PreperationService preperationService) {
         this.loggerService = loggerService;
-        this.preperationService = preperationService;
         initializeStoreMap(preperationService.getStores());
     }
 
@@ -58,52 +56,58 @@ public class Processor {
 
     @RabbitListener(queues = {"${application.location-queue-config.name}"})
     public void receive(@Payload Message message) throws Exception {
-        log.info("location data has arrived.");
         // Receive location
         String payload = new String(message.getBody(), StandardCharsets.UTF_8);
-        System.out.println(payload);
         LocationData locationData = objectMapper.readValue(payload, LocationData.class);
-        System.out.println(locationData.toString());
 
         Integer courierId = locationData.getCourier();
-        Double lat = locationData.getLat();
-        Double lng = locationData.getLng();
 
         // Store last location in memory
         CourierDetails courierDetails = courierDetailsCache.get(courierId);
         if (courierDetails == null) {
             courierDetails = new CourierDetails();
             courierDetails.setCourierId(courierId);
-            courierDetails.setLatitude(lat);
-            courierDetails.setLongitude(lng);
+            courierDetails.setLatitude(locationData.getLat());
+            courierDetails.setLongitude(locationData.getLng());
             courierDetailsCache.put(courierId, courierDetails);
         }
 
         // Save location
         courierLocationClient.saveLocation(locationData);
 
-        // Calculate distance between two location and add store in local memory
+        // Calculate distance between two location and add store in local memory first
         double haversineDistance = DistanceCalculatorUtil.haversineDistance(courierDetails.getLatitude(), courierDetails.getLongitude(), locationData.getLat(), locationData.getLng());
         courierDetails.addDistance(haversineDistance);
         courierDetails.incrementCounter();
 
-
+        // Calculate and save every after 10 location data arrived.
         if (courierDetails.getCounter() == 10) {
-            // Calculate and save every after 10 data arrived.
-            log.info("counter {}", courierDetails.getCounter());
-            courierDetails.resetCounter();
-            CourierTotalDistance currentTotalDistance = courierTotalDistanceClient.getCurrentTotalDistance(courierId);
-            double total = haversineDistance;
-            Integer id = null;
-            if (currentTotalDistance != null) {
-                id = currentTotalDistance.getId();
-                Double distance = currentTotalDistance.getDistance();
-                total += distance;
-            }
-
-            courierTotalDistanceClient.saveDistance(new CourierTotalDistance(id, courierId, total, DateUtil.epochToZonedDateTime(locationData.getTime())));
+            saveDistance(courierDetails, locationData);
         }
 
+        checkMigrosLocations(courierDetails, locationData);
+
+    }
+
+    void saveDistance(CourierDetails courierDetails, LocationData locationData) {
+        // save distance
+        // Calculate and save every after 10 data arrived.
+        log.info("counter {}", courierDetails.getCounter());
+        courierDetails.resetCounter();
+        CourierTotalDistance currentTotalDistance = courierTotalDistanceClient.getCurrentTotalDistance(courierDetails.getCourierId());
+        double total = courierDetails.getDistance();
+        Integer id = null;
+        if (currentTotalDistance != null) {
+            id = currentTotalDistance.getId();
+            Double distance = currentTotalDistance.getDistance();
+            total += distance;
+        }
+
+        courierTotalDistanceClient.saveDistance(new CourierTotalDistance(id, courierDetails.getCourierId(), total, DateUtil.epochToZonedDateTime(locationData.getTime())));
+
+    }
+
+    void checkMigrosLocations(CourierDetails courierDetails, LocationData locationData) {
         // Check Migros locations
 
         // This means some of arrived location is too far from any store, no need to do calculations for them.
@@ -111,32 +115,39 @@ public class Processor {
 
         for (Integer key : storeMap.keySet()) {
             Store store = storeMap.get(key);
+            Integer controlAfter = checkStoreAfterTime.get(key);
+            if (controlAfter != null && controlAfter.compareTo(locationData.getTime()) > 0)
+                continue;
             Double latitude = store.getLat();
             Double longitude = store.getLng();
             double distancetoStore = DistanceCalculatorUtil.haversineDistance(latitude, longitude, locationData.getLat(), locationData.getLng());
             log.info("Distance to store is {} - {}", store.getName(), distancetoStore);
-            Integer controlAfter = checkStoreAfterTime.get(key);
 
-            if (controlAfter == null || controlAfter.compareTo(locationData.getTime()) < 0) {
-                // If last checked location is away 5KM do not check for a while
-                // I assumed courier cannot go faster specified maximum speed (200 KM/H)
-                if (distancetoStore > 5) {
-                    // Do not check for a while for that store
-                    int checkAfterSeconds = (int)(distancetoStore / maximumSpeed * 3600);
-                    controlAfter = locationData.getTime() + checkAfterSeconds;
-                    System.out.println(store.getName() + " Check after seconds " + checkAfterSeconds);
+            // If last checked location is away 5KM do not check for a while
+            // I assumed courier cannot go faster specified maximum speed (200 KM/H)
+            if (distancetoStore > 5) {
+                // Do not check for a while for that store
+                int checkAfterSeconds = (int) (distancetoStore / maximumSpeed * 3600);
+                controlAfter = locationData.getTime() + checkAfterSeconds;
+                System.out.println(store.getName() + " Check after seconds " + checkAfterSeconds);
+                System.out.println(controlAfter);
+                checkStoreAfterTime.put(key, controlAfter);
+            } else {
+                if (distancetoStore < 0.1) {
+                    // Write log to queue
+                    log.info("push log to queue");
+                    loggerService.log(courierDetails.getCourierId(), store, locationData);
+                    // Do not check in 1 minute.
+                    controlAfter = locationData.getTime() + 60;
+                    System.out.println("Control after because of entrance " + controlAfter);
                     checkStoreAfterTime.put(key, controlAfter);
-                } else {
-                    if (distancetoStore < 0.1) {
-                        // Write log to queue
-                        loggerService.log(courierId, store, locationData);
-                        // Do not check in 1 minute.
-                        controlAfter = locationData.getTime() + 60;
-                        System.out.println("Control after because of entrance " + DateUtil.epochToZonedDateTime(controlAfter));
-                        checkStoreAfterTime.put(key, controlAfter);
-                    }
                 }
             }
+
         }
+    }
+
+    public Map<Integer, CourierDetails> getCourierDetailsCache() {
+        return courierDetailsCache;
     }
 }
