@@ -47,7 +47,7 @@ curl -L -X POST 'localhost:8083/api/v1/courier' \
 }'
 ```
 
-Finally push data into queue with request.
+Finally push test dataset into queue with request.
 
 ```
 curl -L -X POST 'localhost:8087/api/v1/worker-test/push-stream' \

@@ -6,6 +6,7 @@ import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -13,7 +14,18 @@ import java.util.List;
 
 @Service
 @Slf4j
-public record CourierLogService(CourierLogRepository courierLogRepository, ObjectMapper objectMapper) {
+public class CourierLogService {
+
+    private final CourierLogRepository courierLogRepository;
+
+    private final ObjectMapper objectMapper;
+
+    public CourierLogService(CourierLogRepository courierLogRepository, ObjectMapper objectMapper) {
+        this.courierLogRepository = courierLogRepository;
+        this.objectMapper = objectMapper;
+    }
+
+    @Transactional
     public void saveLog(CourierLog courierLog) {
         log.info(courierLog.toString());
         courierLogRepository.save(courierLog);

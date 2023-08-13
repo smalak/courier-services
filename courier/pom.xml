@@ -34,6 +34,10 @@
             <artifactId>spring-rabbit</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.sezer.base</groupId>
             <artifactId>common</artifactId>
             <version>1.0-SNAPSHOT</version>

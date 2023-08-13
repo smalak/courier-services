@@ -3,10 +3,19 @@ package com.sezer.courier.couriertotal;
 import com.sezer.courier.courier.Courier;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
-public record CourierTotalDistanceService(CourierTotalDistanceRepository courierTotalDistanceRepository) {
+public class CourierTotalDistanceService {
+
+    private final CourierTotalDistanceRepository courierTotalDistanceRepository;
+
+    public CourierTotalDistanceService(CourierTotalDistanceRepository courierTotalDistanceRepository) {
+        this.courierTotalDistanceRepository = courierTotalDistanceRepository;
+    }
+
+    @Transactional
     public void saveTotalDistance(com.sezer.common.dto.CourierTotalDistance courierTotalDistance) {
         log.info(courierTotalDistance.toString());
         CourierTotalDistance totalDistance = CourierTotalDistance.builder()

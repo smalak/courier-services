@@ -28,7 +28,7 @@ public class CourierTotalDistance {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "courier_id")
+    @JoinColumn(name = "courier_id", referencedColumnName = "id")
     private Courier courier;
 
     private Double distance;
