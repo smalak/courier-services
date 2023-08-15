@@ -46,6 +46,10 @@ public class CourierDetails {
         this.distance += distance;
     }
 
+    public void resetDistance() {
+        this.distance = 0.0;
+    }
+
     public ZonedDateTime getLastLocationEntranceTime() {
         return lastLocationEntranceTime;
     }

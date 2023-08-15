@@ -152,9 +152,9 @@ curl -L -X POST 'localhost:8087/api/v1/worker-test/push-stream' \
 
 ## Courier entrance
 
-When a location data arrived, we don't have to check distance to store every time. I defined a maximum_speed threshold(200km/h) and distance between courier_location and store_location is higher than 5km I didn't do unnecessary entrance control.
+When a location data has arrived, we don't need to check distance to all store every time. I defined a maximum_speed threshold(200km/h) and checked distance between courier_location and store_location first. With that result i can decide not check for a while for some stores.
 
-After entrance i saved log to courier_log table over rabbitmq asyncronious.
+After entrance i saved log to courier_log table over rabbitmq asynchronously.
 
 Check entrances list over api
 

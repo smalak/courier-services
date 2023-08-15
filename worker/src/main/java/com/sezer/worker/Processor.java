@@ -104,6 +104,7 @@ public class Processor {
         }
 
         courierTotalDistanceClient.saveDistance(new CourierTotalDistance(id, courierDetails.getCourierId(), total, DateUtil.epochToZonedDateTime(locationData.getTime())));
+        courierDetails.resetDistance();
 
     }
 
