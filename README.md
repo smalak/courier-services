@@ -35,7 +35,9 @@ localhost:5050, hostname:postgres, username:sezer, password: password
 
 First run eureka-server, and than other 2 microservices.
 
-When all service started successfully, database tables should be created run command to create a courier for testing purposes.
+When all service started successfully, database tables should be created.
+
+Run command to create a courier for testing purposes.
 
 ```
 curl -L -X POST 'localhost:8083/api/v1/courier' \
